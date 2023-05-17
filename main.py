@@ -30,6 +30,16 @@ def collisions(player, obstacles):
          if player.colliderect(obs_rect):
             return False
    return True
+
+def player_animation():
+   global player_surface, player_index
+   
+   if player_rectangle.bottom < 300:
+      player_surface = player_jump
+   else:
+      player_index += 0.1
+      if player_index >= len(player_walk): player_index = 0
+      player_surface = player_walk[int(player_index)]
    
 pygame.init()
 screen = pygame.display.set_mode((800, 400))
@@ -40,16 +50,35 @@ game_active = False
 start_time = 0
 score = 0
 
-# Game screen & Obstacles
+# Game screen
 sky_surface = pygame.image.load('graphics/sky.png').convert()
 ground_surface = pygame.image.load('graphics/ground.png').convert()
-snail_surface = pygame.image.load('graphics/snail/snail1.png').convert_alpha()
-fly_surface = pygame.image.load('graphics/fly/fly1.png').convert_alpha()
+
+# Snails
+snail_frame_1 = pygame.image.load('graphics/snail/snail1.png').convert_alpha()
+snail_frame_2 = pygame.image.load('graphics/snail/snail2.png').convert_alpha()
+snail_frames = [snail_frame_1, snail_frame_2]
+snail_frame_index = 0
+snail_surface = snail_frames[snail_frame_index]
+
+# Flies
+fly_frame_1 = pygame.image.load('graphics/fly/fly1.png').convert_alpha()
+fly_frame_2 = pygame.image.load('graphics/fly/fly2.png').convert_alpha()
+fly_frames = [fly_frame_1, fly_frame_2]
+fly_frame_index = 0
+fly_surface = fly_frames[fly_frame_index]
+
 obstacle_list = []
 
 # Player
-player_surface = pygame.image.load('graphics/player/player_walk_1.png').convert_alpha()
-player_rectangle = player_surface.get_rect(midbottom= (80, 300))
+player_walk_1 = pygame.image.load('graphics/player/player_walk_1.png').convert_alpha()
+player_walk_2 = pygame.image.load('graphics/player/player_walk_2.png').convert_alpha()
+player_walk = [player_walk_1, player_walk_2]
+player_index = 0
+player_jump = pygame.image.load('graphics/player/jump.png').convert_alpha()
+
+player_surface = player_walk[player_index]
+player_rectangle = player_walk_1.get_rect(midbottom= (80, 300))
 player_gravity = 0
 
 # Intro/End screen
@@ -61,10 +90,17 @@ game_name_rectangle = game_name.get_rect(center= (400, 80))
 game_info = my_font.render('Press space to run', False, (111, 196, 169))
 game_info_rectangle = game_info.get_rect(center= (400, 330))
 
-# Timer (+1 to avoid conflicts)
-obstacle_timer = pygame.USEREVENT + 1
-pygame.time.set_timer(obstacle_timer, 1500)
+# Timers
+spawn_obstacle_timer = pygame.USEREVENT + 1
+pygame.time.set_timer(spawn_obstacle_timer, 1500)
 
+snail_animation_timer = pygame.USEREVENT + 2
+pygame.time.set_timer(snail_animation_timer, 500)
+
+fly_animation_timer = pygame.USEREVENT + 3
+pygame.time.set_timer(fly_animation_timer, 200)
+
+# !Main loop
 while True:
    for event in pygame.event.get():
       if event.type == pygame.QUIT:
@@ -77,13 +113,21 @@ while True:
                player_gravity = -20
          if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE and player_rectangle.bottom >= 300:
-                  player_gravity = -20      
-         if event.type == obstacle_timer: # spawn obstacles
-            if randint(0, 2 ): # 0 false, 1 true
+               player_gravity = -20      
+         if event.type == spawn_obstacle_timer:
+            if randint(0, 2 ):
                obstacle_list.append(snail_surface.get_rect(bottomright= (randint(900, 1100), 300)))
             else:
                obstacle_list.append(fly_surface.get_rect(bottomright= (randint(900, 1100), 210)))
-                       
+         if event.type == snail_animation_timer:
+            if snail_frame_index == 0: snail_frame_index = 1
+            else: snail_frame_index = 0
+            snail_surface = snail_frames[snail_frame_index]
+         if event.type == fly_animation_timer:
+            if fly_frame_index == 0: fly_frame_index = 1
+            else: fly_frame_index = 0
+            fly_surface = fly_frames[fly_frame_index]
+            
       else:
          if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
             game_active = True
@@ -99,6 +143,7 @@ while True:
       player_gravity += 1
       player_rectangle.y += player_gravity
       if player_rectangle.bottom >= 300: player_rectangle.bottom = 300
+      player_animation()
       screen.blit(player_surface, player_rectangle)
       
       # Enemies
