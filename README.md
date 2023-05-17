@@ -34,7 +34,7 @@ Rectangles are used in this project for precise positioning of surfaces and effi
 
 ### Spawn objects logic
 1: Create a list of obstacle rectangles
-2: Everytime the timer triggers, add a new rectangle to that list
+2: Every time the timer triggers, add a new rectangle to that list
 3: Move every rectangle in that list to the left on every frame
 4: Delete rectangles too far left from the list
 
@@ -48,6 +48,10 @@ Rectangles are used in this project for precise positioning of surfaces and effi
 
 For each timer, adding +1, +2, +3 to the USEREVENT will avoid any conflicts with the default python timer.
 
-### Sprite class (player, obstacles)
-Class that contains a surface and a rectangle for placement. 
+### Sprite classes for player & obstacles in [`main_sprite.py`]
+A sprite class contains a surface and a rectangle for placement. 
 It can be drawn and updated very easily, and is much more efficient.
+
+1: Create sprite
+2: Place sprites in Group (snails & flies) or GroupSingle (player)
+3: Draw/update all sprites in that group
